@@ -1,1 +1,32 @@
-<!-- market.html content will go here -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ghostlet - Market</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="sidebar"></div>
+<div id="main-content">
+<h1>Market Packs</h1>
+<div id="packs-container"></div>
+</div>
+<script type="module">
+import { setupSidebar, openPack } from './assets/app.js';
+setupSidebar();
+
+// Example packs
+const packs = [
+    { name: "Spooky Pack", price: 10 },
+    { name: "Ghost Pack", price: 25 }
+];
+const container = document.getElementById('packs-container');
+packs.forEach(pack => {
+    const btn = document.createElement('button');
+    btn.textContent = `${pack.name} - ${pack.price} tokens`;
+    btn.onclick = () => openPack(pack.name);
+    container.appendChild(btn);
+});
+</script>
+</body>
+</html>
