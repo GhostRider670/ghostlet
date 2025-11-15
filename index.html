@@ -1,11 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Ghostlet</title>
-<meta http-equiv="refresh" content="0;url=login.html">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ghostlet — Home</title>
+<style>
+  :root{--glow:#ff6aff}
+  body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(180deg,#0d0d1a,#1a1a2e);color:#eee;min-height:100vh;display:flex;flex-direction:column}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#242444;box-shadow:0 0 12px var(--glow);border-bottom:2px solid var(--glow)}
+  .brand{color:var(--glow);font-weight:800;text-decoration:none}
+  .container{max-width:1100px;margin:18px auto;padding:0 18px;flex:1}
+  .hero{margin-top:28px;background:#17172a;padding:28px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.6)}
+  .btn { background:var(--glow); border:none; color:#fff; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; margin-right:8px }
+  .links{margin-top:18px}
+  .muted{color:#aaa}
+</style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-Redirecting to login...
+  <div class="topbar">
+    <a class="brand" href="index.html">Ghostlet</a>
+    <div id="top-controls"></div>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1 style="color:var(--glow)">Welcome to Ghostlet</h1>
+      <p class="muted">Open packs, collect Blooks and chat with other players. Use the links below to navigate.</p>
+
+      <div class="links">
+        <button class="btn" onclick="location.href='market.html'">Market</button>
+        <button class="btn" onclick="location.href='blooks.html'">Blooks</button>
+        <button class="btn" onclick="location.href='chat.html'">Chat</button>
+        <button class="btn" onclick="location.href='stats.html'">Stats</button>
+        <button class="btn" onclick="location.href='settings.html'">Settings</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ===== FIREBASE CONFIG - REPLACE WITH YOURS =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLPQtq39tEcha66rw_ovWa5-I3Nl1qyos",
+  authDomain: "ghostlet-98357.firebaseapp.com",
+  projectId: "ghostlet-98357",
+  storageBucket: "ghostlet-98357.firebasestorage.app",
+  messagingSenderId: "843012219969",
+  appId: "1:843012219969:web:9e3037578726debf2212c0"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const topControls = document.getElementById('top-controls');
+
+  auth.onAuthStateChanged(user=>{
+    topControls.innerHTML = '';
+    if(user){
+      const name = user.displayName || user.email || 'Player';
+      const btnSignOut = document.createElement('button');
+      btnSignOut.className = 'btn';
+      btnSignOut.textContent = 'Sign out';
+      btnSignOut.onclick = ()=> auth.signOut().then(()=> location.reload());
+      const profileBtn = document.createElement('button');
+      profileBtn.className = 'btn';
+      profileBtn.textContent = name;
+      profileBtn.onclick = ()=> location.href='stats.html';
+      topControls.appendChild(profileBtn);
+      topControls.appendChild(btnSignOut);
+    } else {
+      const login = document.createElement('button');
+      login.className = 'btn';
+      login.textContent = 'Login';
+      login.onclick = ()=> location.href='login.html';
+      const reg = document.createElement('button');
+      reg.className = 'btn';
+      reg.textContent = 'Register';
+      reg.onclick = ()=> location.href='register.html';
+      topControls.appendChild(login);
+      topControls.appendChild(reg);
+    }
+  });
+</script>
 </body>
 </html>
