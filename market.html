@@ -1,32 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Ghostlet - Market</title>
-<link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-<div id="sidebar"></div>
-<div id="main-content">
-<h1>Market Packs</h1>
-<div id="packs-container"></div>
-</div>
-<script type="module">
-import { setupSidebar, openPack } from './assets/app.js';
-setupSidebar();
+  <title>Market</title>
+  <link rel="stylesheet" href="style.css">
 
-// Example packs
-const packs = [
-    { name: "Spooky Pack", price: 10 },
-    { name: "Ghost Pack", price: 25 }
-];
-const container = document.getElementById('packs-container');
-packs.forEach(pack => {
-    const btn = document.createElement('button');
-    btn.textContent = `${pack.name} - ${pack.price} tokens`;
-    btn.onclick = () => openPack(pack.name);
-    container.appendChild(btn);
-});
-</script>
+  <style>
+    body {
+      background: #0d0d0f;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .pack {
+      background: #222;
+      padding: 20px;
+      margin: 20px auto;
+      width: 250px;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #5b4cff;
+      transition: 0.2s;
+    }
+
+    .pack:hover {
+      transform: scale(1.03);
+    }
+
+    #popup-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #popup {
+      background: #111;
+      padding: 40px;
+      border-radius: 25px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 0 20px #7442ff;
+    }
+
+    .blook-display {
+      margin-top: 20px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Market</h1>
+
+  <div id="token-display">Tokens: ...</div>
+
+  <!-- Example Spooky Pack -->
+  <div class="pack" onclick="openPack()">
+    <h2>🎃 Spooky Pack — 25 Tokens</h2>
+  </div>
+
+  <!-- Popup for pulling blook -->
+  <div id="popup-bg">
+    <div id="popup">
+      <h2>You pulled:</h2>
+      <div class="blook-display" id="pulled-blook"></div>
+      <p>Tap anywhere to close</p>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLPQtq39tEcha66rw_ovWa5-I3Nl1qyos",
+  authDomain: "ghostlet-98357.firebaseapp.com",
+  projectId: "ghostlet-98357",
+  storageBucket: "ghostlet-98357.firebasestorage.app",
+  messagingSenderId: "843012219969",
+  appId: "1:843012219969:web:9e3037578726debf2212c0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let currentUser;
+
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+
+      const userRef = db.collection("users").doc(user.uid);
+      const snap = await userRef.get();
+      const data = snap.data();
+
+      document.getElementById("token-display").innerText =
+        "Tokens: " + (data.tokens ?? 0);
+    });
+
+    const spookyBlooks = [
+      "Ghost",
+      "Cookie",
+      "Moon",
+      "Phantom",
+      "Cursed Spirit"
+    ];
+
+    function openPack() {
+      const chosen = spookyBlooks[Math.floor(Math.random() * spookyBlooks.length)];
+      document.getElementById("pulled-blook").innerText = chosen;
+      document.getElementById("popup-bg").style.display = "flex";
+
+      saveBlookToUser(chosen);
+    }
+
+    async function saveBlookToUser(blookName) {
+      const user = firebase.auth().currentUser;
+      if (!user) return;
+
+      const userRef = db.collection("users").doc(user.uid);
+
+      await userRef.update({
+        blooks: firebase.firestore.FieldValue.arrayUnion(blookName)
+      });
+
+      console.log("Saved:", blookName);
+    }
+
+    document.getElementById("popup-bg").addEventListener("click", () => {
+      document.getElementById("popup-bg").style.display = "none";
+    });
+  </script>
+
 </body>
 </html>
