@@ -1,147 +1,153 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>Market</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ghostlet — Market</title>
+<style>
+:root{--glow:#ff6aff} body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(180deg,#0d0d1a,#1a1a2e);color:#eee}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#242444;box-shadow:0 0 12px var(--glow);border-bottom:2px solid var(--glow);position:sticky;top:0;z-index:100}
+.brand{color:var(--glow);font-weight:800;text-decoration:none}
+nav button{background:var(--glow);border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;margin-left:4px;font-weight:700}
+.container{max-width:1100px;margin:12px auto;padding:0 18px}
+.h1{color:var(--glow);font-size:1.6rem;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:12px}
+.pack-card{background:linear-gradient(180deg,#20203a,#23233e);border-radius:12px;padding:14px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.6);cursor:pointer;transition:transform .15s,box-shadow .15s;border:2px solid transparent}
+.pack-card:hover{transform:translateY(-6px) scale(1.01);border-color:rgba(255,106,255,0.12)}
+.pack-thumb{width:120px;height:120px;object-fit:contain;margin:8px auto;display:block}
+.pack-title{color:#fff;font-weight:700;margin-top:8px}
+.pack-sub{color:#ccc;font-size:.9rem;margin-top:4px}
+.pack-overlay{position:fixed;inset:0;background:rgba(4,6,20,0.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999}
+.pack-popup{width:420px;max-width:calc(100% - 40px);aspect-ratio:1/1;background:radial-gradient(ellipse at 50% 10%, rgba(255,106,255,0.06), rgba(0,0,0,0.35));border-radius:14px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 18px #ff6aff33;display:flex;align-items:center;justify-content:center;position:relative;cursor:auto;user-select:none;overflow:visible}
+.pack-graphic{width:60%;height:60%;object-fit:contain;transition:transform 700ms cubic-bezier(.2,.9,.2,1),opacity 350ms;z-index:5;pointer-events:none}
+.blook-card{position:absolute;width:44%;height:44%;object-fit:contain;transform:scale(0) rotate(0deg);opacity:0;transition:transform 1000ms cubic-bezier(.18,.9,.2,1),opacity 400ms;z-index:10;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.6));border-radius:8px;background:transparent}
+.blook-card.reveal{transform:scale(1) rotate(720deg);opacity:1}
+.pack-graphic.faded{transform:scale(0.9);opacity:0.12}
+.blook-meta{position:absolute;bottom:14px;width:100%;text-align:center;color:#ddd;font-weight:700;z-index:11;font-family:"Segoe UI",Arial,sans-serif;text-shadow:0 2px 10px rgba(0,0,0,0.75);pointer-events:none}
+.pack-hint{position:absolute;top:12px;right:16px;color:#ffb6ff;font-weight:700;z-index:12;font-family:"Segoe UI",Arial,sans-serif}
+.toast{position:fixed;right:20px;bottom:20px;background:rgba(0,0,0,0.6);color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.6);font-weight:700;z-index:10000}
+.hidden{display:none}
+button{background:var(--glow);border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
+</style>
 
-  <style>
-    body {
-      background: #0d0d0f;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-
-    .pack {
-      background: #222;
-      padding: 20px;
-      margin: 20px auto;
-      width: 250px;
-      border-radius: 15px;
-      cursor: pointer;
-      box-shadow: 0 0 15px #5b4cff;
-      transition: 0.2s;
-    }
-
-    .pack:hover {
-      transform: scale(1.03);
-    }
-
-    #popup-bg {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #popup {
-      background: #111;
-      padding: 40px;
-      border-radius: 25px;
-      width: 350px;
-      text-align: center;
-      box-shadow: 0 0 20px #7442ff;
-    }
-
-    .blook-display {
-      margin-top: 20px;
-      font-size: 28px;
-      font-weight: bold;
-    }
-  </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/firebase.js"></script>
 </head>
-
 <body>
-
-  <h1>Market</h1>
-
-  <div id="token-display">Tokens: ...</div>
-
-  <!-- Example Spooky Pack -->
-  <div class="pack" onclick="openPack()">
-    <h2>🎃 Spooky Pack — 25 Tokens</h2>
-  </div>
-
-  <!-- Popup for pulling blook -->
-  <div id="popup-bg">
-    <div id="popup">
-      <h2>You pulled:</h2>
-      <div class="blook-display" id="pulled-blook"></div>
-      <p>Tap anywhere to close</p>
+  <div class="topbar">
+    <a class="brand" href="index.html">Ghostlet</a>
+    <div>
+      <button onclick="location.href='stats.html'">Stats</button>
+      <button onclick="location.href='chat.html'">Chat</button>
+      <button onclick="location.href='market.html'">Market</button>
+      <button onclick="location.href='blooks.html'">Blooks</button>
+      <button onclick="location.href='settings.html'">Settings</button>
+      <button id="logoutBtn">Logout</button>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <div class="container">
+    <div class="h1">Market — Packs</div>
+    <div id="packsGrid" class="grid" aria-live="polite"></div>
+  </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLPQtq39tEcha66rw_ovWa5-I3Nl1qyos",
-  authDomain: "ghostlet-98357.firebaseapp.com",
-  projectId: "ghostlet-98357",
-  storageBucket: "ghostlet-98357.firebasestorage.app",
-  messagingSenderId: "843012219969",
-  appId: "1:843012219969:web:9e3037578726debf2212c0"
-    };
+  <div id="toast" class="toast hidden"></div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<script>
+const auth = Ghostlet.auth();
+const db = Ghostlet.db();
 
-    let currentUser;
+const PACKS = [
+  {
+    id: "spooky_pack",
+    name: "Spooky Pack",
+    image: "https://i.ibb.co/7rXxLxk/spooky-pack.png",
+    price: 25,
+    blooks: [
+      { id:"ghost_001", name:"Friendly Ghost", rarity:"Common", image:"https://i.ibb.co/0FQG7kF/friendly-ghost.png", weight:50 },
+      { id:"cookie_001", name:"Haunted Cookie", rarity:"Uncommon", image:"https://i.ibb.co/fdH9x8x/haunted-cookie.png", weight:25 },
+      { id:"moon_001", name:"Crescent Moon", rarity:"Rare", image:"https://i.ibb.co/NV8Lkk6/crescent-moon.png", weight:15 },
+      { id:"phantom_001", name:"Dark Phantom", rarity:"Epic", image:"https://i.ibb.co/wrgvXc0/spooky-phantom.png", weight:7 },
+      { id:"pumpkin_001", name:"Pumpkin Spirit", rarity:"Legendary", image:"https://i.ibb.co/gTT1QWq/pumpkin-spirit.png", weight:3 },
+      { id:"specter_001", name:"Glowing Specter", rarity:"Chroma", image:"https://i.ibb.co/KV9h7dD/glowing-specter.png", weight:1 }
+    ]
+  }
+];
 
-    firebase.auth().onAuthStateChanged(async user => {
-      if (!user) {
-        window.location.href = "login.html";
+function showToast(msg,t=2400){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.remove('hidden'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.add('hidden'),t); }
+function pickWeighted(blooks){ const weights = blooks.map(b=>Math.max(1,b.weight||1)); const sum = weights.reduce((a,b)=>a+b,0); let r=Math.random()*sum; for(let i=0;i<blooks.length;i++){ r-=weights[i]; if(r<=0) return blooks[i]; } return blooks[blooks.length-1]; }
+
+auth.onAuthStateChanged(user=>{
+  if(!user) return location.href='login.html';
+  renderPacks();
+  document.getElementById('logoutBtn').addEventListener('click', ()=> auth.signOut());
+});
+
+function renderPacks(){
+  const grid = document.getElementById('packsGrid'); grid.innerHTML='';
+  for(const p of PACKS){
+    const div=document.createElement('div'); div.className='pack-card';
+    div.innerHTML = `<img class="pack-thumb" src="${p.image}" alt=""><div class="pack-title">${p.name}</div><div class="pack-sub">${p.blooks.length} blooks — ${p.price} tokens</div>`;
+    div.addEventListener('click', ()=> openPackPopup(p));
+    grid.appendChild(div);
+  }
+}
+
+function openPackPopup(pack){
+  const overlay=document.createElement('div'); overlay.className='pack-overlay';
+  const popup=document.createElement('div'); popup.className='pack-popup';
+  overlay.appendChild(popup);
+
+  const hint=document.createElement('div'); hint.className='pack-hint'; hint.textContent='Tap to open'; popup.appendChild(hint);
+  const packImg=document.createElement('img'); packImg.className='pack-graphic'; packImg.src=pack.image; popup.appendChild(packImg);
+  const blookImg=document.createElement('img'); blookImg.className='blook-card'; popup.appendChild(blookImg);
+  const meta=document.createElement('div'); meta.className='blook-meta'; meta.style.display='none'; popup.appendChild(meta);
+  document.body.appendChild(overlay);
+
+  let state='idle'; let selected=null;
+
+  // Close when tapping outside popup (overlay)
+  overlay.addEventListener('click', (e)=>{
+    if(e.target !== overlay) return;
+    overlay.remove();
+  });
+
+  // Single click flow: tap to reveal, tap outside to close
+  popup.addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    const user = auth.currentUser;
+    if(!user) { showToast('Login to open packs'); return; }
+    if(state==='idle'){
+      const userRef = db.collection('users').doc(user.uid);
+      const userSnap = await userRef.get();
+      const userData = userSnap.data() || {};
+      const currTokens = userData.tokens || 0;
+      if(currTokens < (pack.price || 0)){
+        showToast('Not enough tokens');
         return;
       }
-      currentUser = user;
 
-      const userRef = db.collection("users").doc(user.uid);
-      const snap = await userRef.get();
-      const data = snap.data();
+      selected = pickWeighted(pack.blooks || []);
+      blookImg.src = selected.image;
+      meta.style.display='block';
+      meta.textContent = `${selected.name} • ${selected.rarity}`;
+      packImg.classList.add('faded');
+      blookImg.classList.add('reveal');
+      hint.textContent = 'Tap outside to return';
+      state='revealed';
 
-      document.getElementById("token-display").innerText =
-        "Tokens: " + (data.tokens ?? 0);
-    });
-
-    const spookyBlooks = [
-      "Ghost",
-      "Cookie",
-      "Moon",
-      "Phantom",
-      "Cursed Spirit"
-    ];
-
-    function openPack() {
-      const chosen = spookyBlooks[Math.floor(Math.random() * spookyBlooks.length)];
-      document.getElementById("pulled-blook").innerText = chosen;
-      document.getElementById("popup-bg").style.display = "flex";
-
-      saveBlookToUser(chosen);
+      const blookObj = { id: selected.id, name: selected.name, rarity: selected.rarity, image: selected.image, addedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      userRef.update({
+        blooks: firebase.firestore.FieldValue.arrayUnion(blookObj),
+        packsOpened: firebase.firestore.FieldValue.increment(1),
+        tokens: firebase.firestore.FieldValue.increment(- (pack.price || 0))
+      }).then(()=> showToast(`${selected.name} added to your collection`)).catch(err=> { console.warn(err); showToast('Failed to save'); });
     }
+  });
 
-    async function saveBlookToUser(blookName) {
-      const user = firebase.auth().currentUser;
-      if (!user) return;
-
-      const userRef = db.collection("users").doc(user.uid);
-
-      await userRef.update({
-        blooks: firebase.firestore.FieldValue.arrayUnion(blookName)
-      });
-
-      console.log("Saved:", blookName);
-    }
-
-    document.getElementById("popup-bg").addEventListener("click", () => {
-      document.getElementById("popup-bg").style.display = "none";
-    });
-  </script>
-
+  document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ overlay.remove(); document.removeEventListener('keydown',esc); }});
+}
+</script>
 </body>
 </html>
