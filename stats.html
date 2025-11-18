@@ -1,94 +1,87 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
 <title>Ghostlet — Stats</title>
-<style>
-:root{--glow:#ff6aff}
-body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(180deg,#0d0d1a,#1a1a2e);color:#eee}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#242444;box-shadow:0 0 12px var(--glow);border-bottom:2px solid var(--glow)}
-.brand{color:var(--glow);font-weight:800;text-decoration:none}
-.container{max-width:800px;margin:12px auto;padding:0 18px}
-.profile{display:flex;align-items:center;margin-bottom:20px}
-.profile img{width:64px;height:64px;border-radius:50%;margin-right:12px;border:2px solid var(--glow);object-fit:cover}
-.badges{margin-left:8px;display:flex;gap:6px}
-.badge{background:#2b2b44;color:#fff;padding:4px 8px;border-radius:6px;font-size:0.8rem}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-top:12px}
-.stat-card{background:#2b2b44;padding:14px;border-radius:12px;text-align:center;border:2px solid rgba(255,106,255,0.06)}
-.stat-card h3{margin:6px 0;color:#ff6aff}
-button{background:var(--glow);border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://bjgxufxgpgojkwqbdyqp.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqZ3h1ZnhncGdvamt3cWJkeXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTk1NjMsImV4cCI6MjA3ODk3NTU2M30.BRyjh8E2WK1KTquDhzfBtAmcBuxhZ4jRsZQgN_5s9rg";
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+</script>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="/firebase.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow-x:hidden;background:#050505;color:#fff;font-family:Segoe UI,Arial}
+  .topbar{width:100%;background:#070707;padding:12px 20px;border-bottom:3px solid #00fef0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+  .topbar-left{color:#00fef0;font-weight:800;font-size:20px}
+  .page-container{max-width:900px;margin:24px auto;padding:20px;width:calc(100% - 40px)}
+  .panel{background:#0e0e0e;padding:18px;border-radius:12px}
+  .profile{display:flex;align-items:center;gap:14px}
+  .pfp{width:96px;height:96px;border-radius:50%;border:3px solid #00fef0;background:#111}
+  .username{font-size:1.6rem;color:#00fef0;font-weight:800}
+  .badges{margin-left:auto;display:flex;gap:8px}
+  .badge{background:#00fef0;color:#000;padding:8px 10px;border-radius:10px;font-weight:800}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px}
+  .stat-card{background:#111;padding:14px;border-radius:10px;text-align:center}
+  .label{color:#bbb;font-weight:700}
+  .value{color:#00fef0;font-weight:900;font-size:1.4rem;margin-top:6px}
+</style>
 </head>
 <body>
-<div class="topbar">
-  <a class="brand" href="index.html">Ghostlet</a>
-  <div>
-    <button onclick="location.href='chat.html'">Chat</button>
-    <button onclick="location.href='market.html'">Market</button>
-    <button onclick="location.href='blooks.html'">Blooks</button>
-    <button onclick="location.href='settings.html'">Settings</button>
-    <button id="logoutBtn">Logout</button>
-  </div>
-</div>
+  <div class="topbar"><div class="topbar-left">Ghostlet</div><div style="display:flex;gap:12px"><a href="index.html" style="color:#fff">Home</a><a href="market.html" style="color:#fff">Market</a><a href="blooks.html" style="color:#fff">Blooks</a><a href="chat.html" style="color:#fff">Chat</a><a href="settings.html" style="color:#fff">Settings</a></div></div>
 
-<div class="container">
-  <div class="profile">
-    <img id="profilePic" src="https://i.ibb.co/0FQG7kF/friendly-ghost.png" alt="Profile">
-    <div>
-      <h2 id="username">Username</h2>
-      <div class="badges" id="badges"></div>
-    </div>
-  </div>
+  <div class="page-container">
+    <div class="panel">
+      <div class="profile">
+        <div class="pfp" id="pfp"></div>
+        <div>
+          <div class="username" id="username">Loading…</div>
+          <div style="color:#aaa" id="uid"></div>
+        </div>
+        <div class="badges" id="badges"></div>
+      </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3 id="tokens">0</h3>
-      <p>Tokens</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="packsOpened">0</h3>
-      <p>Packs Opened</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="blooksOwned">0</h3>
-      <p>Blooks Owned</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="messagesSent">0</h3>
-      <p>Messages Sent</p>
+      <div class="stats-grid" style="margin-top:18px">
+        <div class="stat-card"><div class="label">Tokens</div><div class="value" id="tokens">0</div></div>
+        <div class="stat-card"><div class="label">Packs Opened</div><div class="value" id="packs">0</div></div>
+        <div class="stat-card"><div class="label">Blooks Owned</div><div class="value" id="blooks">0</div></div>
+        <div class="stat-card"><div class="label">Messages Sent</div><div class="value" id="messages">0</div></div>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-const auth = Ghostlet.auth();
-const db = Ghostlet.db();
+  async function init(){
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return location.href='login.html';
+    const uid = session.user.id;
 
-auth.onAuthStateChanged(async user=>{
-  if(!user) return location.href='login.html';
-  const userRef = db.collection('users').doc(user.uid);
-  document.getElementById('logoutBtn').addEventListener('click',()=> auth.signOut());
-
-  userRef.onSnapshot(doc=>{
-    if(!doc.exists) return;
-    const data = doc.data();
-    document.getElementById('username').textContent = data.username || user.displayName || 'Player';
-    document.getElementById('profilePic').src = data.profilePic || 'https://i.ibb.co/0FQG7kF/friendly-ghost.png';
-    const badgesEl = document.getElementById('badges'); badgesEl.innerHTML='';
-    (data.badges || []).forEach(b=>{
-      const d=document.createElement('div'); d.className='badge'; d.textContent=b; badgesEl.appendChild(d);
+    // profile row
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', uid).single();
+    document.getElementById('username').textContent = profile?.username || session.user.email || 'Ghostlet User';
+    document.getElementById('uid').textContent = uid;
+    document.getElementById('pfp').style.backgroundImage = `url(${profile?.pfp || 'https://i.ibb.co/0FQG7kF/friendly-ghost.png'})`;
+    document.getElementById('pfp').style.backgroundSize = 'cover';
+    // badges (array expected)
+    const badgesEl = document.getElementById('badges'); badgesEl.innerHTML = '';
+    (profile?.badges || []).forEach(b=>{
+      const s = document.createElement('div'); s.className='badge'; s.textContent = b; badgesEl.appendChild(s);
     });
-    document.getElementById('tokens').textContent = data.tokens || 0;
-    document.getElementById('packsOpened').textContent = data.packsOpened || 0;
-    document.getElementById('messagesSent').textContent = data.messagesSent || 0;
-    document.getElementById('blooksOwned').textContent = Array.isArray(data.blooks) ? data.blooks.length : 0;
-  });
-});
+
+    // stats: prefer profile counts; fallback to counts from child tables
+    const packs = profile?.packs_opened ?? 0;
+    const blooks = profile?.blooks_owned ?? 0;
+    const messages = profile?.messages_sent ?? 0;
+    document.getElementById('packs').textContent = packs;
+    document.getElementById('blooks').textContent = blooks;
+    document.getElementById('messages').textContent = messages;
+
+    // tokens if exist
+    document.getElementById('tokens').textContent = profile?.tokens ?? 0;
+  }
+
+  init();
 </script>
 </body>
 </html>
