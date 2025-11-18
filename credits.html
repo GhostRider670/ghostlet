@@ -6,27 +6,35 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <style>
-    html,body{height:100%;margin:0;padding:0;background:#050505;color:#fff;font-family:Segoe UI,Arial}
-    .center{max-width:720px;margin:48px auto;text-align:center;padding:28px;background:#0e0e0e;border-radius:18px;box-shadow:0 0 40px rgba(0,255,255,0.06)}
-    h1{color:#00fef0;margin-bottom:6px}
-    input{width:90%;padding:12px;border-radius:10px;border:none;background:#222;color:#fff;margin:8px 0}
-    button{background:#00fef0;border:none;color:#000;padding:12px 18px;border-radius:12px;cursor:pointer;font-weight:700;width:92%}
-    a{color:#00fef0}
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px}
+  html,body{margin:0;padding:0;overflow-x:hidden;background:#050505;color:#fff;font-family:Segoe UI,Arial}
+  .topbar{width:100%;background:#070707;padding:12px 20px;border-bottom:3px solid #00fef0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+  .topbar-left{color:#00fef0;font-weight:800;font-size:20px}
+  .page-container{max-width:900px;margin:24px auto;padding:20px;width:calc(100% - 40px)}
+  .panel{background:#0e0e0e;padding:18px;border-radius:12px}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px}
   .stat-card{background:#111;padding:14px;border-radius:10px;text-align:center}
-  </style>
+  .label{color:#bbb;font-weight:700}
+  .value{color:#00fef0;font-weight:900;font-size:1.4rem;margin-top:6px}
+</style>
+</head>
 
+  <body>
   <script>
-  <div class="stats-grid" style="margin-top:18px">
-        <div class="stat-card"><div class="label">GhostRider</div><div class="value" id="username">The Owner of Ghostlet</div></div>
-        <div class="stat-card"><div class="label">User</div><div class="value" id="username">0</div></div>
-        <div class="stat-card"><div class="label">User</div><div class="value" id="username">0</div></div>
-        <div class="stat-card"><div class="label">User</div><div class="value" id="username">0</div></div>
+  <div class="page-container">
+    <div class="panel">
+        <div>
+          <div style="color:#aaa" id="uid"></div>
+        </div>
+
+      <div class="stats-grid" style="margin-top:18px">
+        <div class="stat-card"><div class="label">GhostRider</div><div class="value" id="tokens">Owner</div></div>
+        <div class="stat-card"><div class="label">User</div><div class="value" id="packs">0</div></div>
+        <div class="stat-card"><div class="label">User</div><div class="value" id="blooks">0</div></div>
+        <div class="stat-card"><div class="label">User</div><div class="value" id="messages">0</div></div>
       </div>
     </div>
   </div>
 
-  ]
   
-</head>
+    </body>
 </html>
