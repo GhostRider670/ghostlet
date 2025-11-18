@@ -41,7 +41,7 @@
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { msg.textContent = 'Login failed: ' + error.message; return; }
       // success -> redirect
-      location.href = 'index.html';
+      location.href = 'stats.html';
     };
   </script>
 </body>
